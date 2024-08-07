@@ -23,8 +23,7 @@ import {
   TraceTypes,
 } from "./typings/common";
 import { getFingerprintId } from "./core/fingerprint";
-import { sendByImg } from "./core/send";
-import { sendEmail } from "./email/mailer";
+import { safeSend } from "./core/send";
 
 export interface TraceOptions {
   perfOnSend: () => void;
@@ -193,7 +192,7 @@ export class BaseTrace implements BaseTraceInterface {
 
   public send(data: TraceTypeData | TracePerf) {
     const traceData = this.setTraceData(data);
-    sendByImg(this.dsn, traceData);
+    safeSend(this.dsn, traceData);
   }
 
   createPerfReport() {
@@ -457,7 +456,7 @@ export class BaseTrace implements BaseTraceInterface {
       console.log("[queue] traceSdk.queue: ", traceSdk.queue);
       const data = traceSdk.queue.shift();
       console.log("[queue] data: ", data);
-      if (data) sendByImg(traceSdk.dsn, data);
+      if (data) safeSend(traceSdk.dsn, data);
     }, traceSdk.sendTimer);
 
     // @ts-ignore

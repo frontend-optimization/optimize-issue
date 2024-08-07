@@ -1,5 +1,15 @@
 import { safeStringify } from "./util";
 
+export function safeSend(url: string, data: TraceData) {
+  if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+    sendBeacon(url, data);
+  } else if (typeof Image !== "undefined") {
+    sendByImg(url, data);
+  } else {
+    sendByXHR(url, data);
+  }
+}
+
 // 使用sendBeacon发送数据
 export function sendBeacon(url: string, data: TraceData) {
   if (typeof navigator === "undefined") return;
