@@ -1,4 +1,4 @@
-import { encode } from 'js-base64';
+import { encode } from "js-base64";
 import { getTimestamp, uuid } from "./util";
 
 const { fetch: originFetch } = window;
@@ -13,50 +13,49 @@ const { fetch: originFetch } = window;
 // }
 
 export type OnFetchError = {
-  url: string
-  status: number
-  statusText: string
-  method: 'POST' | 'GET'
-  body: any,
-  elapsedTime: number
-}
+  url: string;
+  status: number;
+  statusText: string;
+  method: "POST" | "GET";
+  body: any;
+  elapsedTime: number;
+};
 
 export type OnBeforeProps = {
-  url: string
-  method: 'POST' | 'GET'
-  options?: RequestInit
-}
+  url: string;
+  method: "POST" | "GET";
+  options?: RequestInit;
+};
 
 export type InterceptFetchType = {
-  pagePath: string
+  pagePath: string;
   onError: (error: OnFetchError) => void;
   onBefore?: (props: OnBeforeProps) => void;
   onAfter?: (result: any) => void;
-}
+};
 
 // 拦截fetch
 const interceptFetch = ({
   pagePath,
   onError,
   onBefore,
-  onAfter
+  onAfter,
 }: InterceptFetchType) => {
-
   return async (...args: any) => {
     let [url, options] = args;
-    const startTime = getTimestamp()
+    const startTime = getTimestamp();
 
     const traceId = uuid();
     const traceSegmentId = uuid();
     const appId = uuid();
-    const appVersion = 'v1.0.0'
+    const appVersion = "v1.0.0";
 
-    if (Object.prototype.toString.call(args[0]) === '[object Request]') {
+    if (Object.prototype.toString.call(args[0]) === "[object Request]") {
       url = new URL(url.url);
     } else {
-      if (args[0].startsWith('http://') || args[0].startsWith('https://')) {
+      if (args[0].startsWith("http://") || args[0].startsWith("https://")) {
         url = new URL(args[0]);
-      } else if (args[0].startsWith('//')) {
+      } else if (args[0].startsWith("//")) {
         url = new URL(`${window.location.protocol}${args[0]}`);
       } else {
         url = new URL(window.location.href);
@@ -79,20 +78,21 @@ const interceptFetch = ({
     if (!options.headers) {
       options.headers = {};
     }
-    options.headers['sw8'] = values;
+    options.headers["sw8"] = values;
 
     let res;
     try {
-      onBefore && onBefore({
-        url,
-        method: options.method,
-        options
-      })
+      onBefore &&
+        onBefore({
+          url,
+          method: options.method,
+          options,
+        });
       res = await originFetch(url, options);
 
-      onAfter && onAfter(res)
+      onAfter && onAfter(res);
     } catch (err) {
-      if (!!options.signal && err.name == 'AbortError') {
+      if (!!options.signal && err.name == "AbortError") {
         onError({
           url,
           status: res.status,
@@ -100,9 +100,9 @@ const interceptFetch = ({
           method: options.method,
           body: options.body,
           elapsedTime: getTimestamp() - startTime,
-        })
+        });
       } else {
-        throw err
+        throw err;
       }
     }
     if (!(res.ok && res.status >= 200 && res.status < 300)) {
@@ -113,11 +113,11 @@ const interceptFetch = ({
         method: options.method,
         body: options.body,
         elapsedTime: getTimestamp() - startTime,
-      })
+      });
     }
 
-    return res
-  }
-}
+    return res;
+  };
+};
 
-export default interceptFetch
+export default interceptFetch;

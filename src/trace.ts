@@ -1,5 +1,3 @@
 import { BaseTrace } from "./baseTrace";
 
-export default class TraceSdk extends BaseTrace {
-
-}
+export default class TraceSdk extends BaseTrace {}

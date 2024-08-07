@@ -1,156 +1,172 @@
-
-import { BaseTraceInterface } from './core/interface';
-import { onVitals, mapMetric, generateUniqueId } from './core/webvitals';
-import interceptFetch, { OnBeforeProps, OnFetchError } from './core/fetch';
-import { dataCategory2BreadcrumbsCategory, dataTypes2BreadcrumbsType, getPerfLevel, getTimestamp, getTraceDataLevel, getTraceDataType, hashCode, isResourceTarget, uuid } from './core/util';
-import { BreadcrumbTypes, BreadcrumbsCategorys, BrowserType, TraceClientTypes, TraceDataSeverity, TraceDataTypes, TraceLevelType, TraceTypes } from './typings/common'
-import { getFingerprintId } from './core/fingerprint';
-import { sendByImg } from './core/send';
+import { BaseTraceInterface } from "./core/interface";
+import { onVitals, mapMetric, generateUniqueId } from "./core/webvitals";
+import interceptFetch, { OnBeforeProps, OnFetchError } from "./core/fetch";
+import {
+  dataCategory2BreadcrumbsCategory,
+  dataTypes2BreadcrumbsType,
+  getPerfLevel,
+  getTimestamp,
+  getTraceDataLevel,
+  getTraceDataType,
+  hashCode,
+  isResourceTarget,
+  uuid,
+} from "./core/util";
+import {
+  BreadcrumbTypes,
+  BreadcrumbsCategorys,
+  BrowserType,
+  TraceClientTypes,
+  TraceDataSeverity,
+  TraceDataTypes,
+  TraceLevelType,
+  TraceTypes,
+} from "./typings/common";
+import { getFingerprintId } from "./core/fingerprint";
+import { sendByImg } from "./core/send";
+import { sendEmail } from "./email/mailer";
 
 export interface TraceOptions {
   perfOnSend: () => void;
   perfBeforeSend: () => void;
-  dsn: string
-  debug?: boolean
-  appId: string
+  dsn: string;
+  debug?: boolean;
+  appId: string;
 }
 
 export class BaseTrace implements BaseTraceInterface {
-
   // 日志上报后端API
-  public dsn: string = ''
+  public dsn: string = "";
   // 页面ID
-  public pageId: string = ''
+  public pageId: string = "";
   //
-  public userAgent = navigator.userAgent
+  public userAgent = navigator.userAgent;
   //
-  public browserType = BrowserType.MOBILE
+  public browserType = BrowserType.MOBILE;
   // fingerprintId
-  public fpId = ''
+  public fpId = "";
   // user id
-  public uid = ''
+  public uid = "";
   // appId
-  public appId = ''
+  public appId = "";
 
   // 是否开启debug状态
   public debug = true;
 
   // 性能日志数据
   public perfData: TracePerf = {
-    id: ''
-  }
+    id: "",
+  };
 
   // 存储错误资源数据
-  public resources: TraceDataResource[] = []
+  public resources: TraceDataResource[] = [];
 
-  public result = {}
+  public result = {};
 
   // 记录用户行为
-  public breadcrumb: TraceBreadcrumbs = []
+  public breadcrumb: TraceBreadcrumbs = [];
 
   // 最大存储用户行为
-  public maxBreadcrumb = 10
+  public maxBreadcrumb = 10;
 
   // 是否开启用户行为
-  public breadcrumbEnabled = true
+  public breadcrumbEnabled = true;
 
-  public observer = null
+  public observer = null;
 
   // 存储链路日志数据
-  public queue: TraceData[] = []
+  public queue: TraceData[] = [];
 
   // 发送请求时间间隔
-  public sendTimer = 1000
+  public sendTimer = 1000;
 
   public constructor(options: TraceOptions) {
-    console.log('BaseTrace constructor.')
-    this.pageId = uuid()
-    this.dsn = options.dsn
-    this.appId = options.appId
-    this.debug = !!options.debug
+    console.log("BaseTrace constructor.");
+    this.pageId = uuid();
+    this.dsn = options.dsn;
+    this.appId = options.appId;
+    this.debug = !!options.debug;
     this.perfData = {
-      id: generateUniqueId()
-    }
-    this.fpId = getFingerprintId('TraceCourse')
+      id: generateUniqueId(),
+    };
+    this.fpId = getFingerprintId("TraceCourse");
 
     this.observer = new PerformanceObserver((list, observer) => {
       list.getEntries().forEach((entry) => {
         this.debug && console.debug(`name    : ${entry.name}`);
         this.debug && console.debug(`type    : ${entry.entryType}`);
         this.debug && console.debug(`duration: ${entry.duration}`);
-        if (entry.entryType === 'resource') {
-          this.handleObserverResource(entry as PerformanceResourceTiming)
+        if (entry.entryType === "resource") {
+          this.handleObserverResource(entry as PerformanceResourceTiming);
         }
       });
     });
   }
 
-
-
   public log(log: TraceDataLog) {
     this.saveBreadcrumb({
-      name: 'customer-log',
+      name: "customer-log",
       level: log.level,
       type: dataTypes2BreadcrumbsType(log.type),
       category: dataCategory2BreadcrumbsCategory(log.type),
       message: log.message,
       time: getTimestamp(),
-    })
+    });
     this.debug && console.debug(`log: ${JSON.stringify(log)}`);
-    this.send(log)
+    this.send(log);
   }
 
   public info(message: string, tag?: string) {
     this.log({
-      name: 'customer-info',
+      name: "customer-info",
       type: TraceDataTypes.LOG,
       level: TraceDataSeverity.Info,
       message,
       time: getTimestamp(),
-      dataId: hashCode(`${message}|${tag || ''}`),
+      dataId: hashCode(`${message}|${tag || ""}`),
       tag,
-    })
+    });
   }
 
   public warn(message: string, tag?: string) {
     this.log({
-      name: 'customer-warning',
+      name: "customer-warning",
       type: TraceDataTypes.LOG,
       level: TraceDataSeverity.Warning,
       message,
       time: getTimestamp(),
-      dataId: hashCode(`${message}|${tag || ''}`),
+      dataId: hashCode(`${message}|${tag || ""}`),
       tag,
-    })
+    });
   }
 
   public error(message: string, tag?: string) {
     this.log({
-      name: 'customer-error',
+      name: "customer-error",
       type: TraceDataTypes.LOG,
       level: TraceDataSeverity.Error,
       message,
       time: getTimestamp(),
-      dataId: hashCode(`${message}|${tag || ''}`),
+      dataId: hashCode(`${message}|${tag || ""}`),
       tag,
-    })
+    });
   }
 
   public setTraceData(data: TraceTypeData | TracePerf) {
-    let type = TraceTypes.CONSOLE
-    let level = TraceLevelType.Debug
-    let _data = null
-    let perf = null
+    let type = TraceTypes.CONSOLE;
+    let level = TraceLevelType.Debug;
+    let _data = null;
+    let perf = null;
 
     if (!!(data as TraceTypeData).dataId) {
-      type = getTraceDataType((data as TraceTypeData).type)
-      level = getTraceDataLevel((data as TraceTypeData).level)
-      _data = data as TraceTypeData
+      type = getTraceDataType((data as TraceTypeData).type);
+      level = getTraceDataLevel((data as TraceTypeData).level);
+      _data = data as TraceTypeData;
     }
     if (!!(data as TracePerf).id) {
-      type = TraceTypes.PERF
-      level = getPerfLevel(data as TracePerf)
-      perf = data as TracePerf
+      type = TraceTypes.PERF;
+      level = getPerfLevel(data as TracePerf);
+      perf = data as TracePerf;
     }
 
     const traceData: TraceData = {
@@ -170,14 +186,14 @@ export class BaseTrace implements BaseTraceInterface {
       url: document.URL,
       pid: this.pageId,
       uid: this.uid,
-    }
-    this.debug && console.log('[setTraceData]traceData: ',traceData)
-    return traceData
+    };
+    this.debug && console.log("[setTraceData]traceData: ", traceData);
+    return traceData;
   }
 
   public send(data: TraceTypeData | TracePerf) {
-    const traceData = this.setTraceData(data)
-    sendByImg(this.dsn, traceData)
+    const traceData = this.setTraceData(data);
+    sendByImg(this.dsn, traceData);
   }
 
   createPerfReport() {
@@ -186,45 +202,51 @@ export class BaseTrace implements BaseTraceInterface {
     };
 
     setTimeout(() => {
-      const supportedEntryTypes = (PerformanceObserver && PerformanceObserver.supportedEntryTypes) || []
-      const isLatestVisibilityChangeSupported = supportedEntryTypes.indexOf('layout-shift') !== -1
+      const supportedEntryTypes =
+        (PerformanceObserver && PerformanceObserver.supportedEntryTypes) || [];
+      const isLatestVisibilityChangeSupported =
+        supportedEntryTypes.indexOf("layout-shift") !== -1;
 
       if (isLatestVisibilityChangeSupported) {
         const onVisibilityChange = () => {
-          if (document.visibilityState === 'hidden') {
-            console.log('this.send', this.perfData)
-            this.send(this.perfData)
+          if (document.visibilityState === "hidden") {
+            console.log("this.send", this.perfData);
+            this.send(this.perfData);
             // removeEventListener('visibilitychange', onVisibilityChange, true)
           }
-        }
-        addEventListener('visibilitychange', onVisibilityChange, true)
+        };
+        addEventListener("visibilitychange", onVisibilityChange, true);
       } else {
-        addEventListener('pagehide', () => {
-          console.log('pagehide', this.perfData)
-          this.send(this.perfData)
-        }, { capture: true, once: true })
+        addEventListener(
+          "pagehide",
+          () => {
+            console.log("pagehide", this.perfData);
+            this.send(this.perfData);
+          },
+          { capture: true, once: true }
+        );
       }
-    })
+    });
 
-    return report
+    return report;
   }
 
   public saveError(event: ErrorEvent) {
-    console.log('[onResourceError] event: ', event)
+    console.log("[onResourceError] event: ", event);
     const target = event.target || event.srcElement;
     const isResTarget = isResourceTarget(target as HTMLElement);
 
     if (!isResTarget) {
       const traceData: TraceTypeData = {
         dataId: hashCode(`${event.type}-${event.error.stack}`),
-        name: 'script-error',
+        name: "script-error",
         level: TraceDataSeverity.Error,
         message: event.message,
         time: getTimestamp(),
         type: TraceDataTypes.JAVASCRIPT,
-        stack: event.error.stack
-      }
-      this.resources.push(traceData)
+        stack: event.error.stack,
+      };
+      this.resources.push(traceData);
       this.breadcrumb.push({
         name: event.error.name,
         type: BreadcrumbTypes.CODE_ERROR,
@@ -232,65 +254,73 @@ export class BaseTrace implements BaseTraceInterface {
         level: TraceDataSeverity.Error,
         message: event.message,
         stack: event.error.stack,
-        time: getTimestamp()
-      })
-      this.queue.push(this.setTraceData(traceData))
+        time: getTimestamp(),
+      });
+      this.queue.push(this.setTraceData(traceData));
     } else {
-      const url = (target as HTMLElement).getAttribute('src') || (target as HTMLElement).getAttribute('href')
+      const url =
+        (target as HTMLElement).getAttribute("src") ||
+        (target as HTMLElement).getAttribute("href");
       const traceData: TraceTypeData = {
-        dataId: hashCode(`${(target as HTMLElement).nodeName.toLowerCase()}-${event.message}${url}`),
-        name: 'resource-load-error',
+        dataId: hashCode(
+          `${(target as HTMLElement).nodeName.toLowerCase()}-${
+            event.message
+          }${url}`
+        ),
+        name: "resource-load-error",
         level: TraceDataSeverity.Warning,
         message: event.message,
         time: getTimestamp(),
         type: TraceDataTypes.RESOURCE,
-        stack: null
-      }
-      this.resources.push(traceData)
+        stack: null,
+      };
+      this.resources.push(traceData);
       this.breadcrumb.push({
         name: traceData.name,
         type: BreadcrumbTypes.RESOURCE,
         category: BreadcrumbsCategorys.Exception,
         level: TraceDataSeverity.Warning,
         message: event.message,
-        time: getTimestamp()
-      })
-      this.queue.push(this.setTraceData(traceData))
+        time: getTimestamp(),
+      });
+      this.queue.push(this.setTraceData(traceData));
     }
-
   }
 
   public handleObserverResource(entry: PerformanceResourceTiming) {
-    if (entry.entryType === 'resource') {
-      let level = TraceDataSeverity.Info
+    if (entry.entryType === "resource") {
+      let level = TraceDataSeverity.Info;
       if (entry.duration > 1000 && entry.duration < 1500) {
-        level = TraceDataSeverity.Warning
-      } else  if (entry.duration > 1500) {
-        level = TraceDataSeverity.Error
+        level = TraceDataSeverity.Warning;
+      } else if (entry.duration > 1500) {
+        level = TraceDataSeverity.Error;
       }
-      entry.duration > 1000 && this.resources.push({
-        url: entry.name,
-        name: `${entry.entryType}-duration-${entry.initiatorType}`,
-        type: TraceDataTypes.PERF,
-        level,
-        message: `duration:${Math.round(entry.duration)}`,
-        time: getTimestamp(),
-        dataId: hashCode(`${entry.entryType}-${entry.name}`),
-      })
+      entry.duration > 1000 &&
+        this.resources.push({
+          url: entry.name,
+          name: `${entry.entryType}-duration-${entry.initiatorType}`,
+          type: TraceDataTypes.PERF,
+          level,
+          message: `duration:${Math.round(entry.duration)}`,
+          time: getTimestamp(),
+          dataId: hashCode(`${entry.entryType}-${entry.name}`),
+        });
     }
   }
 
   // 这里的构造数据有问题，后续需要更新
   public onFetchError(message: OnFetchError) {
-    console.log('[onFetchError] message: ', message)
+    console.log("[onFetchError] message: ", message);
     const traceBaseData: TraceBaseData = {
-      dataId: hashCode(`${message.url}-${message.method}-${message.status}-${message.statusText}`),
-      name: 'fetch-error',
+      dataId: hashCode(
+        `${message.url}-${message.method}-${message.status}-${message.statusText}`
+      ),
+      name: "fetch-error",
       level: TraceDataSeverity.Critical,
-      message: '',
+      message: "",
       time: getTimestamp(),
-      type: TraceDataTypes.HTTP
-    }
+      type: TraceDataTypes.HTTP,
+    };
     const errorData: TraceDataFetch = {
       ...traceBaseData,
       url: message.url,
@@ -299,21 +329,21 @@ export class BaseTrace implements BaseTraceInterface {
       method: message.method,
       body: message.body,
       elapsedTime: message.elapsedTime,
-      httpType: 'fetch'
-    }
-    console.log('error data: ', errorData)
-    this.queue.push(this.setTraceData(errorData))
+      httpType: "fetch",
+    };
+    console.log("error data: ", errorData);
+    this.queue.push(this.setTraceData(errorData));
   }
 
   public onGlobalError() {
-    const _t = this
-    console.log('onGlobalError')
-    window.addEventListener('error', (event) => {
-      _t.saveError(event)
-    })
-    window.addEventListener('unhandledrejection', (event: any) => {
+    const _t = this;
+    console.log("onGlobalError");
+    window.addEventListener("error", (event) => {
+      _t.saveError(event);
+    });
+    window.addEventListener("unhandledrejection", (event: any) => {
       // _t.saveError(event)
-      console.log(event)
+      console.log(event);
       if (event instanceof PromiseRejectionEvent) {
         const errorEvent = new ErrorEvent("promiseRejection", {
           message: event.reason.toString(),
@@ -326,28 +356,28 @@ export class BaseTrace implements BaseTraceInterface {
       } else if (event instanceof ErrorEvent) {
         _t.saveError(event);
       }
-    })
+    });
   }
 
   public onGlobalClick() {
-    const _t = this
-    window.addEventListener('click', (event) => {
-      const target = event.target as HTMLElement
-      const innerHTML = target.innerHTML
+    const _t = this;
+    window.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      const innerHTML = target.innerHTML;
       const bc: TraceAction = {
-        name: 'click',
+        name: "click",
         level: TraceDataSeverity.Normal,
         type: BreadcrumbTypes.CLICK,
         category: BreadcrumbsCategorys.User,
         message: innerHTML,
-        time: getTimestamp()
-      }
-      this.saveBreadcrumb(bc)
-    })
+        time: getTimestamp(),
+      };
+      this.saveBreadcrumb(bc);
+    });
   }
 
   public onObserverResource() {
-    const _t = this
+    const _t = this;
     // const observer = new PerformanceObserver((list, observer) => {
     //   list.getEntries().forEach((entry) => {
     //     console.log(`name    : ${entry.name}`);
@@ -363,35 +393,35 @@ export class BaseTrace implements BaseTraceInterface {
 
   public saveBreadcrumb(data: TraceAction) {
     if (this.breadcrumbEnabled) {
-      this.breadcrumb.push(data)
+      this.breadcrumb.push(data);
       if (this.breadcrumb.length > this.maxBreadcrumb) {
-        this.breadcrumb.shift()
+        this.breadcrumb.shift();
       }
     }
   }
 
   public setUserId(userId: string) {
-    this.uid = userId
+    this.uid = userId;
   }
 
   // 初始化实例
   public static init(options: TraceOptions): BaseTrace {
-    const traceSdk = new BaseTrace(options)
+    const traceSdk = new BaseTrace(options);
 
-    traceSdk.onGlobalError()
+    traceSdk.onGlobalError();
     // traceSdk.onObserverResource()
     traceSdk.observer.observe({
       entryTypes: ["resource"],
     });
 
     window.fetch = interceptFetch({
-      pagePath: '',
+      pagePath: "",
       onError: (error) => {
-        traceSdk.onFetchError(error)
+        traceSdk.onFetchError(error);
       },
       onBefore: (props: OnBeforeProps) => {
         traceSdk.saveBreadcrumb({
-          name: 'fetch',
+          name: "fetch",
           level: TraceDataSeverity.Normal,
           type: BreadcrumbTypes.FETCH,
           category: BreadcrumbsCategorys.Http,
@@ -400,13 +430,13 @@ export class BaseTrace implements BaseTraceInterface {
           request: {
             method: props.method,
             url: props.url,
-            options: props.options
-          }
-        })
+            options: props.options,
+          },
+        });
       },
       onAfter: (result: any) => {
         traceSdk.saveBreadcrumb({
-          name: 'fetch',
+          name: "fetch",
           level: TraceDataSeverity.Normal,
           type: BreadcrumbTypes.FETCH,
           category: BreadcrumbsCategorys.Http,
@@ -414,24 +444,24 @@ export class BaseTrace implements BaseTraceInterface {
           time: getTimestamp(),
           response: {
             status: result.status,
-            statusText: result.statusText
-          }
-        })
-      }
-    })
+            statusText: result.statusText,
+          },
+        });
+      },
+    });
 
     // 监听页面性能
-    onVitals(traceSdk.createPerfReport())
+    onVitals(traceSdk.createPerfReport());
 
     setInterval(() => {
-      console.log('[queue] traceSdk.queue: ', traceSdk.queue)
-      const data = traceSdk.queue.shift()
-      console.log('[queue] data: ', data)
-      if (data) sendByImg(traceSdk.dsn, data)
-    }, traceSdk.sendTimer)
+      console.log("[queue] traceSdk.queue: ", traceSdk.queue);
+      const data = traceSdk.queue.shift();
+      console.log("[queue] data: ", data);
+      if (data) sendByImg(traceSdk.dsn, data);
+    }, traceSdk.sendTimer);
 
     // @ts-ignore
-    window.traceSdk = traceSdk
-    return traceSdk
+    window.traceSdk = traceSdk;
+    return traceSdk;
   }
 }

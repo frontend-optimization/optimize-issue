@@ -11,7 +11,12 @@
   "license": "ISC",
   "dependencies": {
     "log4js": "^6.9.1",
-    "nodemailer": "^6.9.14"
+    "nodemailer": "^6.9.14",
+    "express": "^4.19.1",
+    "js-base64": "^3.7.7",
+    "open": "^10.1.0",
+    "web-vitals": "^3.5.2",
+    "web-vitals-reporter": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.9"
