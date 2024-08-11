@@ -1,11 +1,11 @@
 {
   "name": "@zer0fire/optimize-issue",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
-  "main": "dist/trace-sdk.umd.js",
+  "main": "dist/optimize-issue.umd.js",
   "type": "module",
-  "module": "dist/trace-sdk.es5.js",
-  "typings": "dist/types/trace-sdk.d.ts",
+  "module": "dist/optimize-issue.esm.js",
+  "typings": "dist/types/optimize-issue.d.ts",
   "scripts": {
     "build": "tsc --module commonjs && rollup --config rollup.config.ts && typedoc --out docs src"
   },
@@ -16,7 +16,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@zer0fire/optimize-issue": "^1.0.1",
     "express": "^4.19.1",
     "js-base64": "^3.7.7",
     "lodash.camelcase": "^4.3.0",

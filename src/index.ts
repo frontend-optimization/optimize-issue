@@ -1,5 +1,6 @@
 import { TraceOptions } from "./baseTrace";
 import TraceSdk from "./trace";
+import { BaseTraceOptions } from "@zer0fire/optimize-issue";
 
 let instance: any;
 
