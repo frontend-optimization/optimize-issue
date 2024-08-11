@@ -1,5 +1,10 @@
 # Optimize Package
 
+TODO: Github CI/CD publish version
+
+<!-- npm login -->
+<!-- npm publish --access public -->
+
 <!-- curl --location 'https://huangbowen.cn/api/log' \
 --header 'Content-Type: application/json' \
 --data '
