@@ -1,11 +1,11 @@
 {
   "name": "@zer0fire/optimize-issue",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "description": "",
   "main": "dist/optimize-issue.umd.js",
   "type": "module",
   "module": "dist/optimize-issue.esm.js",
-  "typings": "dist/types/optimize-issue.d.ts",
+  "typings": "dist/types/index.d.ts",
   "scripts": {
     "build": "tsc --module commonjs && rollup --config rollup.config.ts"
   },
