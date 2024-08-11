@@ -1,13 +1,13 @@
 {
   "name": "@zer0fire/optimize-issue",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "dist/trace-sdk.umd.js",
   "type": "module",
   "module": "dist/trace-sdk.es5.js",
   "typings": "dist/types/trace-sdk.d.ts",
   "scripts": {
-    "build": "tsc --module commonjs && rollup --config rollup.config.ts"
+    "build": "tsc --module commonjs && rollup --config rollup.config.ts && typedoc --out docs src"
   },
   "files": [
     "dist"
@@ -16,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@zer0fire/optimize-issue": "^1.0.1",
     "express": "^4.19.1",
     "js-base64": "^3.7.7",
     "lodash.camelcase": "^4.3.0",
@@ -23,16 +24,17 @@
     "nodemailer": "^6.9.14",
     "open": "^10.1.0",
     "web-vitals": "^3.5.2",
-    "web-vitals-reporter": "^1.0.0"
+    "web-vitals-reporter": "^1.0.0",
+    "typedoc": "^0.25.12"
   },
   "devDependencies": {
+    "@rollup/plugin-html": "^1.0.3",
     "@types/node": "^20.14.15",
     "rollup": "^2.79.1",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
-    "rollup-plugin-typescript2": "^0.36.0",
-    "@rollup/plugin-html": "^1.0.3"
+    "rollup-plugin-typescript2": "^0.36.0"
   }
 }
