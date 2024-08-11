@@ -1,6 +1,6 @@
 {
   "name": "@zer0fire/optimize-issue",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "dist/optimize-issue.umd.js",
   "type": "module",
