@@ -1,5 +1,7 @@
 import { safeStringify } from "./util";
 
+const API_URL = "https://huangbowen.cn/api/log";
+
 export function safeSend(url: string, data: TraceData) {
   if (typeof navigator !== "undefined" && navigator.sendBeacon) {
     sendBeacon(url, data);

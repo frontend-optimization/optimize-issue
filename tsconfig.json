@@ -3,7 +3,16 @@
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true,
     "lib": ["ESNext", "DOM"],
-    "module": "ESNext"
+    "module": "ESNext",
+    "strict": false,
+    "sourceMap": true,
+    "removeComments": true,
+    "outDir": "dist",
+    "typeRoots": ["node_modules/@types", "./src/typings"],
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationDir": "dist/types"
   },
+  "include": ["src"],
   "exclude": ["node_modules"]
 }
