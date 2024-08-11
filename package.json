@@ -16,7 +16,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@zer0fire/optimize-issue": "^1.0.2",
     "express": "^4.19.1",
     "js-base64": "^3.7.7",
     "lodash.camelcase": "^4.3.0",

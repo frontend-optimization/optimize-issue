@@ -1,5 +1,9 @@
 // ./typing.d.ts
 
+interface Global extends Window {
+  traceSdkInit: any;
+}
+
 export declare enum TraceTypes {
   // PVUV
   PAGE_VIEW = "PageView",
