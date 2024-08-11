@@ -1,5 +1,5 @@
 {
-  "name": "optimize-issue",
+  "name": "@zer0fire/optimize-issue",
   "version": "1.0.0",
   "description": "",
   "main": "dist/trace-sdk.umd.js",

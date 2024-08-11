@@ -1,4 +1,6 @@
-curl --location 'https://huangbowen.cn/api/log' \
+# Optimize Package
+
+<!-- curl --location 'https://huangbowen.cn/api/log' \
 --header 'Content-Type: application/json' \
 --data '
 {
@@ -38,3 +40,4 @@ curl --location 'https://huangbowen.cn/api/log' \
 ]
 }
 '
+ -->
