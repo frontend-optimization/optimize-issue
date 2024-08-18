@@ -337,9 +337,16 @@ export class BaseTrace implements BaseTraceInterface {
   public onGlobalError() {
     const _t = this;
     console.log("onGlobalError");
-    window.addEventListener("error", (event) => {
-      _t.saveError(event);
-    });
+    window.addEventListener(
+      "error",
+      (event) => {
+        // 如果要全局监听资源加载错误，需要在捕获阶段捕获事件。
+        // https://segmentfault.com/a/1190000023259434
+        // https://devdoc.net/web/developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror.html
+        _t.saveError(event);
+      },
+      true
+    );
     window.addEventListener("unhandledrejection", (event: any) => {
       // _t.saveError(event)
       console.log(event);
